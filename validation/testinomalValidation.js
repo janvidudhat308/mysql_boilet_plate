@@ -4,9 +4,7 @@ const Joi=require('joi');
 function testinomalValidation(user_val)
 {
     const schema=Joi.object({
-        category_name:Joi.string().required().messages({
-            'any.required': `"category_name" is a required field`
-        }),
+        
         image:Joi.string().messages({
             'string.empty': `"image" cannot be an empty field`,
             'any.required': `"image" is a required field`

@@ -4,8 +4,8 @@ const Joi=require('joi');
 function portfolioValidation(user_val)
 {
     const schema=Joi.object({
-        category:Joi.string().messages({
-            'string.empty': `"category_id" cannot be an empty field`,
+        category_id:Joi.string().messages({
+            
             'any.required': `"category_id" is a required field`
            }),
         image:Joi.string().messages({

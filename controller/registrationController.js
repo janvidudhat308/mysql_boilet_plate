@@ -9,13 +9,13 @@ const genrateToken=require('../helper/auth');
 const validation=require('../validation/registrationValidation');
 const {OTPsend}=require('../helper/sendEmail');
 const { error, log } = require('winston');
-const e = require('express');
+
 let otp =Math.floor(Math.random() *100000+1);
 
 
 //Registration
 module.exports.registration=async (req,res)=>{
-    let count=0;
+    
     const {error}=validation.registrationValidation(req.body);
     if(error) 
     {
