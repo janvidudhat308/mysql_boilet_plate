@@ -107,8 +107,11 @@ module.exports.deleteMultiple = async (req, res) => {
 //view portfolio
 module.exports.view = async (req, res) => {
     
-    var id = req.params.id;
-    const getdata=`SELECT * FROM portfolio WHERE id='${id}'`;
+    const id=req.params.id;
+    const getdata=`SELECT  portfolio.*, category_id AS category_info FROM 
+                    portfolio JOIN category ON portfolio.category_id=category.id 
+                    WHERE portfolio.id='${id}'` ;
+    
     con.query(getdata, async(err, result) => {
         if(result){
             res.send(result);

@@ -2,31 +2,53 @@ const validate = require("../validation/contactValidation");
 const { Contact } = require("../models/contact_model");
 let today = new Date().toISOString().slice(0, 10);
 const con=require('../startup/db');
+const { error, log } = require('winston');
+const { GeneralResponse } = require("../utils/response");
+const { GeneralError } = require("../utils/error");
+const config = require("../utils/config");
+const logger = require('../loggers/logger');
+
 //Add contact
-module.exports.addcontact=async(req,res)=>{
-    const {error}=validate.contactValidation(req.body);
+module.exports.addcontact=async(req,res,next)=>{
+    const {error}=validate.contactValidation(req.body,next);
     if(error) 
     {
         return res.status(400).send(error.details[0].message);
     }
-    con.query(`SELECT * FROM contact WHERE email=?`,[req.body.email],(error,result)=>{
+    con.query(`SELECT * FROM contact WHERE email=?`,[req.body.email],async(error,result)=>{
         if(result.length>0)
         {
-            return res.status(400).send('Email already exixts....');
+            await next(
+                new GeneralError(
+                    "Email already exists...",
+                    undefined,
+                )
+            );
         }
-        else
+        if(result.length==0)
         {
             const name=req.body.name;
             const phone=req.body.phone;
             const email=req.body.email;
             const message=req.body.message;
             const insert_query=`INSERT INTO contact (name,email,phone,message,date) VALUES ("${name}","${email}","${phone}","${message}","${today}")`;
-            con.query(insert_query,(error,result) => {
+            con.query(insert_query,async(error,result) => {
                 if (error) {
-                    res.send(error);
+                    await next(
+                        new GeneralError(
+                            "Contact not added...",
+                            undefined,
+                        )
+                    );
                 } else {
                     
-                     res.send('Contact added...');
+                    await next(
+                        new GeneralResponse(
+                            " contact added ....",
+                            undefined,
+                            config.HTTP_ACCEPTED
+                        )
+                    );
                 }
             });
         
@@ -35,7 +57,7 @@ module.exports.addcontact=async(req,res)=>{
    }
 
 //update Contact
-module.exports.updatecontact=async(req,res)=>{
+module.exports.updatecontact=async(req,res,next)=>{
     
     let id=req.params.id;
     const {error}=validate.contactValidation(req.body);
@@ -50,56 +72,95 @@ module.exports.updatecontact=async(req,res)=>{
             const email=req.body.email;
             const message=req.body.message;
             const updatecontact_query=`UPDATE contact SET name=?,phone=?,email=?,message=?,date=? WHERE id=?`;
-            con.query(updatecontact_query,[name,phone,email,message,today,id],(error,result) => {
+            con.query(updatecontact_query,[name,phone,email,message,today,id],async(error,result) => {
                 if (error) {
-                    res.send(error);
+                    await next(
+                        new GeneralError(
+                            "Contact not updated...",
+                            undefined,
+                        )
+                    );
                 } else {
                     
-                     res.send('Contact updated...');
+                    await next(
+                        new GeneralResponse(
+                            " contact updated ....",
+                            undefined,
+                            config.HTTP_ACCEPTED
+                        )
+                    );
                 }
             });
         }
 }
 
 //delete Contact
-module.exports.deletecontact=async(req,res)=>{
+module.exports.deletecontact=async(req,res,next)=>{
     let id=req.params.id;
     con.query('DELETE FROM contact WHERE id=?',[id], async(err, result) => {
         if(result){
-            res.send('contact deleted successfully......!');
+            await next(
+                new GeneralResponse(
+                    " contact deleted successfully ....",
+                    undefined,
+                    config.HTTP_ACCEPTED
+                )
+            );
         }
         else{
-            res.status(400).send('data not found');
+            await next(
+                new GeneralError(
+                    "Contact not deleted...",
+                    undefined,
+                )
+            );
         }
     });
 }
 
 //delete multiple
-module.exports.deletemultiplecontact=async(req,res)=>{
+module.exports.deletemultiplecontact=async(req,res,next)=>{
     let id=req.body.id;
     for(let i=0;i<id.length;i++)
     {
         const deletecontact_query=`DELETE  FROM contact WHERE id=?`;
-        con.query(deletecontact_query,[id[i]],(error,result)=>{
+        con.query(deletecontact_query,[id[i]],async(error,result)=>{
         if(error)
         {
-            return res.send('contact not delete..');
+            await next(
+                new GeneralError(
+                    "Contact not added...",
+                    undefined,
+                )
+            );
         }
     });
            
     } 
-            return res.send('contact  deleted..');
+    await next(
+        new GeneralResponse(
+            " contact deleted ....",
+            undefined,
+            config.HTTP_ACCEPTED
+        )
+    );
 }
 //view contact
-module.exports.viewcontact=async(req,res)=>{
+module.exports.viewcontact=async(req,res,next)=>{
     
     let id=req.params.id;
     con.query('SELECT * FROM contact WHERE id=? ',[id], async(err,result) => {
-        if(result){
+        if(result.length>0){
+            
             res.send(result)
         }
         else{
-            res.status(400).send('data not found');
+            await next(
+                new GeneralError(
+                    "Contact not found...",
+                    undefined,
+                )
+            );
         }
     });
 }

@@ -1,7 +1,12 @@
 const validate = require('../validation/categoryValidation');
 const con=require('../startup/db');
+const { error, log } = require('winston');
+const { GeneralResponse } = require("../utils/response");
+const { GeneralError } = require("../utils/error");
+const config = require("../utils/config");
+const logger = require('../loggers/logger');
 
-module.exports.addCategory=async(req,res)=>{
+module.exports.addCategory=async(req,res,next)=>{
     const {error}=validate.addCategoryValidation(req.body);
     if(error) 
     {
@@ -9,44 +14,69 @@ module.exports.addCategory=async(req,res)=>{
     }
     if(!req.file)
     {
-        return res.status(400).send('category image  is require..');
+        await next(
+            new GeneralError(
+                "Image is required..",
+                undefined,
+            )
+        );
     }
-    con.query(`SELECT * FROM category WHERE category_name=?`,[req.body.categoryname],(error,result)=>{
+    con.query(`SELECT * FROM category WHERE category_name=?`,[req.body.categoryname],async(error,result)=>{
         if(result.length>0)
         {
-            return res.status(400).send('category already exists....');
+            await next(
+                new GeneralError(
+                    "category already exists..",
+                    undefined,
+                )
+            );
         }
-    });
-    const image=req.file.filename;
+        if(result.length==0)
+        {
+            const image=req.file.filename;
     const category_name=req.body.categoryname;
     const insert_query=`INSERT INTO category (category_name,category_image) VALUES ("${category_name}","${image}")`;
-    con.query(insert_query,(error,result) => {
+    con.query(insert_query,async(error,result) => {
         if (error) {
             res.send("Error",error);
         } else {
             
-             res.send("category added");
+            await next(
+                new GeneralResponse(
+                    req.body.categoryname + " category added ....",
+                    undefined,
+                    config.HTTP_ACCEPTED
+                )
+            );
         }
     });
+        }
+    });
+    
 
 }
 
 //view category
 module.exports.listAllCategory = async (req, res) => {
     const viewcategory_query=`SELECT * FROM category`;
-    con.query(viewcategory_query,(error,result)=>{
+    con.query(viewcategory_query,async(error,result)=>{
         
         if (result) {
             return res.send(result);
         } else {
             
-            return res.send(error);
+            await next(
+                new GeneralError(
+                    "category not found..",
+                    undefined,
+                )
+            );
         }
     });
 };
 
 //update category
-module.exports.updatecategory=async(req,res)=>{
+module.exports.updatecategory=async(req,res,next)=>{
     let id = req.params.id;
    
 
@@ -63,48 +93,80 @@ module.exports.updatecategory=async(req,res)=>{
     const categoryimage=req.file.filename;
     
     const updatecategory_query=`UPDATE category SET category_name=?,category_image=? WHERE id=?`;
-    con.query(updatecategory_query,[categoryname,categoryimage,id],(error,result)=>{
+    con.query(updatecategory_query,[categoryname,categoryimage,id],async(error,result)=>{
         if (result) {
-            return res.send(result);
+            await next(
+                new GeneralResponse(
+                    " category updated ....",
+                    undefined,
+                    config.HTTP_ACCEPTED
+                )
+            );
         } else {
             
-            return res.send(error);
+            await next(
+                new GeneralError(
+                    "category not updated..",
+                    undefined,
+                )
+            );
         }
     });
 }
 
 //delete category
-module.exports.deleteMultipleCategory = async (req, res) => {
+module.exports.deleteMultipleCategory = async (req, res,next) => {
     var id = req.body.id;
     console.log(id.length);
     let count=0
     for(let i=0;i<id.length;i++)
     {
         const deletecategory_query=`DELETE  FROM category WHERE id=?`;
-        con.query(deletecategory_query,[id[i]],(error,result)=>{
-        if (result) {
-           count=count+1;
-           
+        con.query(deletecategory_query,[id[i]],async(error,result)=>{
+        if (error) {
+            await next(
+                new GeneralError(
+                    "category not deleted..",
+                    undefined,
+                )
+            );
         } 
     });
            
     } 
-            return res.send('category not deleted..');
+            await next(
+                new GeneralResponse(
+                    " category deleted ....",
+                    undefined,
+                    config.HTTP_ACCEPTED
+                )
+            );
     
 }
 
 //delete single category
-module.exports.deleteSingleCategory = async (req, res) => {
+module.exports.deleteSingleCategory = async (req, res,next) => {
     var id = req.params.id;
 
         const deletecategory_query=`DELETE  FROM category WHERE id=?`;
-        con.query(deletecategory_query,[id],(error,result)=>{
-        if (result.length>0) {
-            return res.send('category  deleted..');
+        con.query(deletecategory_query,[id],async(error,result)=>{
+        if (result) {
+            await next(
+                new GeneralResponse(
+                    " category deleted ....",
+                    undefined,
+                    config.HTTP_ACCEPTED
+                )
+            );
         } 
         else
         {
-            return res.send('category not deleted..');
+            await next(
+                new GeneralError(
+                    "category not deleted..",
+                    undefined,
+                )
+            );
         }
     });
            
