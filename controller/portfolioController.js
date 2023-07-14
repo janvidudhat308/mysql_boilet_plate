@@ -4,6 +4,11 @@ const router = express.Router();
 const validate = require("../validation/portfolioValidation");
 let today = new Date().toISOString().slice(0, 10);
 const con = require("../startup/db");
+const { error, log } = require('winston');
+const { GeneralResponse } = require("../utils/response");
+const { GeneralError } = require("../utils/error");
+const config2 = require("../utils/config");
+const logger = require('../loggers/logger');
 //Add Portfolio
 module.exports.add = async (req, res,next) => {
   const { error } = validate.portfolioValidation(req.body);
@@ -26,33 +31,37 @@ module.exports.add = async (req, res,next) => {
           )
       );
       }
+      if(result.length==0)
+      {
+        const name = req.body.name;
+        const title = req.body.title;
+        const description = req.body.description;
+        const id = req.body.category_id;
+        const image = req.files.map((image) => image.filename);
+      
+        const insert_query = `INSERT INTO portfolio (name,image,title,description,category_id,date) VALUES ("${name}","${image}","${title}","${description}","${id}","${today}")`;
+        con.query(insert_query, async(error, result) => {
+          if (error) {
+            await next(
+              new GeneralError(
+                  "portfolio not added...",
+                  undefined,
+              )
+          );
+          } else {
+            await next(
+              new GeneralResponse(
+                  "Portfolio added....",
+                  undefined,
+                  config2.HTTP_CREATED
+              )
+          );
+          }
+        });
+      }
     }
   );
-  const name = req.body.name;
-  const title = req.body.title;
-  const description = req.body.description;
-  const id = req.body.category_id;
-  const image = req.files.map((image) => image.filename);
-
-  const insert_query = `INSERT INTO portfolio (name,image,title,description,category_id,date) VALUES ("${name}","${image}","${title}","${description}","${id}","${today}")`;
-  con.query(insert_query, async(error, result) => {
-    if (error) {
-      await next(
-        new GeneralError(
-            "portfolio not added...",
-            undefined,
-        )
-    );
-    } else {
-      await next(
-        new GeneralResponse(
-            "Portfolio added....",
-            undefined,
-            config.HTTP_CREATED
-        )
-    );
-    }
-  });
+  
 };
 //Update Portfolio
 module.exports.update = async (req, res,next) => {
@@ -70,9 +79,9 @@ module.exports.update = async (req, res,next) => {
   const description = req.body.description;
   const image = req.files.map((image) => image.filename);
   const id=req.params.id;
-  console.log(image);
+  
   const update_query=`UPDATE portfolio SET name='${name}',title='${title}',description='${description}',image='${image}' where id='${id}'`;
-        console.log(update_query);
+        
         con.query(update_query,async(err,result)=>{
             if(error)
             {
@@ -89,7 +98,7 @@ module.exports.update = async (req, res,next) => {
                 new GeneralResponse(
                     "Portfolio updated....",
                     undefined,
-                    config.HTTP_CREATED
+                    config2.HTTP_CREATED
                 )
             );
             }
@@ -102,14 +111,14 @@ module.exports.delete = async (req, res,next) => {
 
     var id = req.params.id;
     const del=`DELETE FROM portfolio WHERE id='${id}'`;
-    console.log(del);
+   
     con.query(del, async(err, result) => {
         if(result){
           await next(
             new GeneralResponse(
-                "Portfolio updated ....",
+                "Portfolio deleted ....",
                 undefined,
-                config.HTTP_CREATED
+                config2.HTTP_CREATED
             )
         );
         }
@@ -129,6 +138,16 @@ module.exports.delete = async (req, res,next) => {
 module.exports.deleteMultiple = async (req, res,next) => {
 
     var id = req.body.id;
+   
+    if(id.length==0)
+    {
+      await next(
+        new GeneralError(
+            "Enter id",
+            undefined,
+        )
+    );
+    }
     for(let i=0;i<id.length;i++)
     {
         const delete_query=`DELETE  FROM portfolio WHERE id=?`;
@@ -149,7 +168,7 @@ module.exports.deleteMultiple = async (req, res,next) => {
       new GeneralResponse(
           "Portfolio deleted....",
           undefined,
-          config.HTTP_CREATED
+          config2.HTTP_CREATED
       )
   ); 
 };
@@ -162,7 +181,7 @@ module.exports.view = async (req, res,next) => {
                     WHERE portfolio.id='${id}'` ;
     
     con.query(getdata, async(err, result) => {
-        if(result){
+        if(result.length>0){
             res.send(result);
         }
         else{

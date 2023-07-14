@@ -169,7 +169,7 @@ module.exports.updateprofile=async(req,res,next)=>{
         con.query(update_query,[name,address,image,email,hobbies,gender,token_email],async(err,result2)=>{
             if(result2)
             {
-                console.log(result2.length,'vb');
+             
                 await next(
                     new GeneralResponse(
                         "User Updated...",
@@ -347,7 +347,7 @@ module.exports.setnewpassword=async(req,res,next)=>{
             con.query(set_password_query,[req.body.newpassword,req.params.email],async(error,result)=>{
         if (result) 
         {
-            console.log(set_password_query);
+            
             return res.status(200).send('password updated.. ');
         }
         else

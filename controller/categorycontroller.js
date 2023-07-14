@@ -117,7 +117,7 @@ module.exports.updatecategory=async(req,res,next)=>{
 //delete category
 module.exports.deleteMultipleCategory = async (req, res,next) => {
     var id = req.body.id;
-    console.log(id.length);
+   
     let count=0
     for(let i=0;i<id.length;i++)
     {
