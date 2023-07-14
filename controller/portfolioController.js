@@ -5,7 +5,7 @@ const validate = require("../validation/portfolioValidation");
 let today = new Date().toISOString().slice(0, 10);
 const con = require("../startup/db");
 //Add Portfolio
-module.exports.add = async (req, res) => {
+module.exports.add = async (req, res,next) => {
   const { error } = validate.portfolioValidation(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
@@ -17,9 +17,14 @@ module.exports.add = async (req, res) => {
   con.query(
     `SELECT * FROM portfolio WHERE name=?`,
     [req.body.name],
-    (error, result) => {
+    async(error, result) => {
       if (result.length > 0) {
-        return res.status(400).send("portfolio already exixts....");
+        await next(
+          new GeneralError(
+              "portfolio already exists...",
+              undefined,
+          )
+      );
       }
     }
   );
@@ -30,16 +35,27 @@ module.exports.add = async (req, res) => {
   const image = req.files.map((image) => image.filename);
 
   const insert_query = `INSERT INTO portfolio (name,image,title,description,category_id,date) VALUES ("${name}","${image}","${title}","${description}","${id}","${today}")`;
-  con.query(insert_query, (error, result) => {
+  con.query(insert_query, async(error, result) => {
     if (error) {
-      res.send(error);
+      await next(
+        new GeneralError(
+            "portfolio not added...",
+            undefined,
+        )
+    );
     } else {
-      res.send("portfolio added...");
+      await next(
+        new GeneralResponse(
+            "Portfolio added....",
+            undefined,
+            config.HTTP_CREATED
+        )
+    );
     }
   });
 };
 //Update Portfolio
-module.exports.update = async (req, res) => {
+module.exports.update = async (req, res,next) => {
   
   const { error } = validate.updateportfolioValidation(req.body);
   if (error) {
@@ -57,55 +73,88 @@ module.exports.update = async (req, res) => {
   console.log(image);
   const update_query=`UPDATE portfolio SET name='${name}',title='${title}',description='${description}',image='${image}' where id='${id}'`;
         console.log(update_query);
-        con.query(update_query,(err,result)=>{
+        con.query(update_query,async(err,result)=>{
             if(error)
             {
-                res.status(400).send('portfolio not updated..');
+              await next(
+                new GeneralError(
+                    "Portfolio not updated...",
+                    undefined,
+                )
+            );
             }
             else
             {
-                res.status(200).send('portfolio  updated..');
+              await next(
+                new GeneralResponse(
+                    "Portfolio updated....",
+                    undefined,
+                    config.HTTP_CREATED
+                )
+            );
             }
         });
   
 };
 
 //delete portfolio
-module.exports.delete = async (req, res) => {
+module.exports.delete = async (req, res,next) => {
 
     var id = req.params.id;
     const del=`DELETE FROM portfolio WHERE id='${id}'`;
     console.log(del);
     con.query(del, async(err, result) => {
         if(result){
-            res.send('portfolio deleted successfully......!');
+          await next(
+            new GeneralResponse(
+                "Portfolio updated ....",
+                undefined,
+                config.HTTP_CREATED
+            )
+        );
         }
         else{
-            res.status(400).send('data not found');
+          await next(
+            new GeneralError(
+                "Data not found",
+                undefined,
+            )
+        );
         }
     });       
 }
 
 
 //delete multiple portfolio
-module.exports.deleteMultiple = async (req, res) => {
+module.exports.deleteMultiple = async (req, res,next) => {
 
     var id = req.body.id;
     for(let i=0;i<id.length;i++)
     {
         const delete_query=`DELETE  FROM portfolio WHERE id=?`;
-        con.query(delete_query,[id[i]],(error,result)=>{
+        con.query(delete_query,[id[i]],async(error,result)=>{
         if (error) {
-            return res.send('portfolio not delete..');
+          await next(
+            new GeneralError(
+                "Data not found",
+                undefined,
+            )
+        );
            
         } 
     });
            
     } 
-            return res.send('portfolio  deleted..');  
+    await next(
+      new GeneralResponse(
+          "Portfolio deleted....",
+          undefined,
+          config.HTTP_CREATED
+      )
+  ); 
 };
 //view portfolio
-module.exports.view = async (req, res) => {
+module.exports.view = async (req, res,next) => {
     
     const id=req.params.id;
     const getdata=`SELECT  portfolio.*, category_id AS category_info FROM 
@@ -117,7 +166,12 @@ module.exports.view = async (req, res) => {
             res.send(result);
         }
         else{
-            res.status(400).send('data not found');
+          await next(
+            new GeneralError(
+                "Data not found...",
+                undefined,
+            )
+        );
         }
     });       
 }

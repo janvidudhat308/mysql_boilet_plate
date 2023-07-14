@@ -45,7 +45,7 @@ module.exports.registration=async (req,res,next)=>{
     const name=req.body.name;
     const email=req.body.email;
     const address=req.body.address;
-    const hobbies=req.body.hobbies;
+    const hobbies=req.body.hobbies.map((hobbies)=>hobbies);
     const gender=req.body.gender;
     const password=await bcrypt.hash(req.body.password,salt); 
     const image=req.file.filename;
@@ -58,6 +58,7 @@ module.exports.registration=async (req,res,next)=>{
                 new GeneralResponse(
                     req.body.name + " Successfully Registered....",
                     undefined,
+                    config.HTTP_CREATED
                 )
             );
         }
