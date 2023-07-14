@@ -148,7 +148,6 @@ module.exports.deleteMultipleCategory = async (req, res,next) => {
                     config.HTTP_ACCEPTED
                 )
             );
-    
 }
 
 //delete single category
@@ -176,9 +175,5 @@ module.exports.deleteSingleCategory = async (req, res,next) => {
             );
         }
     });
-           
-    
-            
-    
 }
 
