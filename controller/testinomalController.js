@@ -145,6 +145,15 @@ module.exports.deletetestinomal = async (req, res,next) => {
 module.exports.deletetemultiplestinomal = async (req, res,next) => {
 
     var id = req.body.id;
+    if(id.length==0)
+    {
+      await next(
+        new GeneralError(
+            "Enter id",
+            undefined,
+        )
+    );
+    }
     for(let i=0;i<id.length;i++)
     {
         const deletetestinomal_query=`DELETE  FROM testinomal WHERE id=?`;

@@ -117,8 +117,15 @@ module.exports.updatecategory=async(req,res,next)=>{
 //delete category
 module.exports.deleteMultipleCategory = async (req, res,next) => {
     var id = req.body.id;
-   
-    let count=0
+    if(id.length==0)
+    {
+      await next(
+        new GeneralError(
+            "Enter id",
+            undefined,
+        )
+    );
+    }
     for(let i=0;i<id.length;i++)
     {
         const deletecategory_query=`DELETE  FROM category WHERE id=?`;

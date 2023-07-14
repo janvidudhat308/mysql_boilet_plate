@@ -121,6 +121,15 @@ module.exports.deletecontact=async(req,res,next)=>{
 //delete multiple
 module.exports.deletemultiplecontact=async(req,res,next)=>{
     let id=req.body.id;
+    if(id.length==0)
+    {
+      await next(
+        new GeneralError(
+            "Enter id",
+            undefined,
+        )
+    );
+    }
     for(let i=0;i<id.length;i++)
     {
         const deletecontact_query=`DELETE  FROM contact WHERE id=?`;
