@@ -161,7 +161,7 @@ module.exports.updateprofile=async(req,res,next)=>{
         const name=req.body.name;
         const email=req.body.email;
         const address=req.body.address;
-        const hobbies=req.body.hobbies;
+        const hobbies=req.body.hobbies.map((hobbies)=>hobbies);
         const gender=req.body.gender;
         const image=req.file.filename;
         const update_query=`UPDATE registration SET name=?,address=?,profilepic=?,email=?,hobbies=?,gender=? where email=?`;

@@ -2,11 +2,11 @@ const express=require('express');
 const upload=require('../helper/upload');
 const  router=express.Router();
 const portfolio=require('../controller/portfolioController');
-const genrateToken=require('../helper/auth');
+const auth=require('../helper/auth');
 
-router.post('/addportfolio',upload.array('image',4),portfolio.add);
-router.post('/portfolioupdate/:id',upload.array('image',4),portfolio.update);
-router.delete('/deleteportfolio/:id',portfolio.delete);
-router.delete('/deleteportmultiplefolio',portfolio.deleteMultiple);
-router.get('/viewportfolio/:id',portfolio.view);
+router.post('/addportfolio',auth.verifyToken(),upload.array('image',4),portfolio.add);
+router.post('/portfolioupdate/:id',auth.verifyToken(),upload.array('image',4),portfolio.update);
+router.delete('/deleteportfolio/:id',auth.verifyToken(),portfolio.delete);
+router.delete('/deleteportmultiplefolio',auth.verifyToken(),portfolio.deleteMultiple);
+router.get('/viewportfolio/:id',auth.verifyToken(),portfolio.view);
 module.exports=router;

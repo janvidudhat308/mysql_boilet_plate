@@ -29,6 +29,5 @@ const verifyToken=(req,res,next)=>{
 exports.genrateToken=genrateToken;
 exports.verifyToken=verifyToken;
 
-// exports.genrateToken=genrateToken;
-//jwt.sign({_id:user._id},config.get('jwtPrivateKey'));
+
 
