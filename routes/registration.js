@@ -11,7 +11,7 @@ router.post('/setnewpassword/:email',registrationController.setnewpassword);
 
 
 router.post('/login',auth.genrateToken,registrationController.login);
-router.post('/updateprofile',upload.single('image'),auth.verifyToken,registrationController.updateprofile);
-router.get('/viewprofile',upload.single('image'),auth.verifyToken,registrationController.viewprofile);
+router.post('/updateprofile',auth.verifyToken,upload.single('image'),registrationController.updateprofile);
+router.get('/viewprofile',auth.verifyToken,upload.single('image'),registrationController.viewprofile);
 router.post('/resetpassword',auth.verifyToken,registrationController.resetpassword);
 module.exports=router;

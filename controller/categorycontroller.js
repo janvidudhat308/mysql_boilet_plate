@@ -5,7 +5,7 @@ const { GeneralResponse } = require("../utils/response");
 const { GeneralError } = require("../utils/error");
 const config = require("../utils/config");
 const logger = require('../loggers/logger');
-
+//add category
 module.exports.addCategory=async(req,res,next)=>{
     const {error}=validate.addCategoryValidation(req.body);
     if(error) 

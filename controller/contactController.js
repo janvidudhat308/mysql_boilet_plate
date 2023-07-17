@@ -118,7 +118,7 @@ module.exports.deletecontact=async(req,res,next)=>{
     });
 }
 
-//delete multiple
+//delete multiple contact
 module.exports.deletemultiplecontact=async(req,res,next)=>{
     let id=req.body.id;
     if(id.length==0)

@@ -2,7 +2,10 @@ const config=require('config');
 const jwt=require('jsonwebtoken');
 const genrateToken=(req,res,next)=>{
     const token=jwt.sign({email:req.body.email},config.get('jwtPrivateKey'));
-    
+    setTimeout(() => {
+        token = null; 
+        console.log("Token expired");
+      }, 24 * 60 * 60 * 1000); 
     res.middlewareData=token;
     next();
 }

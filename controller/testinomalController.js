@@ -3,7 +3,6 @@ const express=require('express');
 const  router=express.Router();
 const jwt=require('jsonwebtoken');
 const con=require('../startup/db');
-const { error, log } = require('winston');
 const { GeneralResponse } = require("../utils/response");
 const { GeneralError } = require("../utils/error");
 const config = require("../utils/config");
